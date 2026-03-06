@@ -59,7 +59,10 @@
         var hash = new L.Hash(map);
         map.attributionControl.setPrefix('<a href="https://github.com/tomchadwin/qgis2web" target="_blank">qgis2web</a> &middot; <a href="https://leafletjs.com" title="A JS library for interactive maps">Leaflet</a> &middot; <a href="https://qgis.org">QGIS</a>');
         var autolinker = new Autolinker({truncate: {length: 30, location: 'smart'}});
-        // remove popup's row if "visible-with-data"
+        function actualizarFiltros(){
+		filterFunc();
+		}		
+		// remove popup's row if "visible-with-data"
         function removeEmptyRowsFromPopupContent(content, feature) {
          var tempDiv = document.createElement('div');
          tempDiv.innerHTML = content;
@@ -482,7 +485,8 @@
         document.getElementById("all").appendChild(col2);
         col1.appendChild(mapDiv)
         var Filters = {"No_Lote": "str","Zona": "str","NOMBRE": "str"};
-        function filterFunc() {
+        var filteredFeatures = [];
+		function filterFunc() {
           map.eachLayer(function(lyr){
           if ("options" in lyr && "dataVar" in lyr["options"]){
             features = this[lyr["options"]["dataVar"]].features.slice(0);
@@ -568,9 +572,85 @@
             }
           this[lyr["options"]["layerName"]].clearLayers();
           this[lyr["options"]["layerName"]].addData(features);
+		  filteredFeatures = features;
           }
-          })
+		  // zoom automático al resultado filtrado
+setTimeout(function(){
+    try{
+        var bounds = layer_zonasverdes__areas_zonas_verdes_2.getBounds();
+        if(bounds.isValid()){
+            map.fitBounds(bounds);
         }
+    }catch(e){}
+},200);
+
+updateDynamicFilters();
+          })
+		}
+		function updateDynamicFilters(){
+
+    var zonas = new Set();
+    var comunas = new Set();
+    var lotes = new Set();
+
+    map.eachLayer(function(layer){
+
+        if(layer.feature){
+
+            var p = layer.feature.properties;
+
+            if(p.Zona){
+                zonas.add(p.Zona);
+            }
+
+            if(p.NOMBRE){
+                comunas.add(p.NOMBRE);
+            }
+
+            if(p.No_Lote){
+                lotes.add(p.No_Lote);
+            }
+
+        }
+
+    });
+
+    updateSelect("sel_Zona", zonas);
+    updateSelect("sel_NOMBRE", comunas);
+    updateSelect("sel_No_Lote", lotes);
+}
+
+function updateSelect(id, values){
+
+    var select = document.getElementById(id);
+
+    var currentValue = select.value;
+
+    select.innerHTML = "";
+
+    // opción para quitar filtro
+    var option = document.createElement("option");
+    option.value = "";
+    option.text = "Todos";
+    select.appendChild(option);
+
+    values = Array.from(values).sort();
+
+    values.forEach(function(v){
+
+        var option = document.createElement("option");
+        option.value = v;
+        option.text = v;
+        select.appendChild(option);
+
+    });
+
+    // mantener selección si aún existe
+    if(values.includes(currentValue)){
+        select.value = currentValue;
+    }
+
+}
             document.getElementById("menu").appendChild(
                 document.createElement("div"));
             var div_No_Lote = document.createElement('div');
