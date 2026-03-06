@@ -55,7 +55,7 @@
         <script>
         var map = L.map('map', {
             zoomControl:false, maxZoom:28, minZoom:1
-        }).fitBounds([[6.219749316194203,-75.5844321012049],[6.256320630458119,-75.51770348350298]]);
+        }).fitBounds([[6.163360927469683,-75.63565577029958],[6.236503168185557,-75.50220970704044]]);
         var hash = new L.Hash(map);
         map.attributionControl.setPrefix('<a href="https://github.com/tomchadwin/qgis2web" target="_blank">qgis2web</a> &middot; <a href="https://leafletjs.com" title="A JS library for interactive maps">Leaflet</a> &middot; <a href="https://qgis.org">QGIS</a>');
         var autolinker = new Autolinker({truncate: {length: 30, location: 'smart'}});
@@ -136,8 +136,6 @@
         document.getElementsByClassName('leaflet-control-measure-toggle')[0].className += ' fas fa-ruler';
         var bounds_group = new L.featureGroup([]);
         function setBounds() {
-            map.setMaxBounds(map.getBounds());
-            map.setMinZoom(map.getZoom());
         }
         map.createPane('pane_GoogleSatellite_0');
         map.getPane('pane_GoogleSatellite_0').style.zIndex = 400;
@@ -483,7 +481,7 @@
         document.getElementById("all").appendChild(col1);
         document.getElementById("all").appendChild(col2);
         col1.appendChild(mapDiv)
-        var Filters = {"No_Lote": "str","Zona": "str"};
+        var Filters = {"No_Lote": "str","Zona": "str","NOMBRE": "str"};
         function filterFunc() {
           map.eachLayer(function(lyr){
           if ("options" in lyr && "dataVar" in lyr["options"]){
@@ -1441,18 +1439,11 @@
             document.getElementById("menu").appendChild(div_Zona);
             sel_Zona = document.createElement('select');
             sel_Zona.multiple = true;
-            sel_Zona.size = 10;
+            sel_Zona.size = 8;
             sel_Zona.id = "sel_Zona";
             var Zona_options_str = "<option value='' unselected></option>";
             sel_Zona.onchange = function(){filterFunc()};
             Zona_options_str  += '<option value=""></option>';
-            Zona_options_str  += '<option value="NULL">NULL</option>';
-            Zona_options_str  += '<option value="1">1</option>';
-            Zona_options_str  += '<option value="2">2</option>';
-            Zona_options_str  += '<option value="3">3</option>';
-            Zona_options_str  += '<option value="4">4</option>';
-            Zona_options_str  += '<option value="6">6</option>';
-            Zona_options_str  += '<option value="7">7</option>';
             Zona_options_str  += '<option value="Z1">Z1</option>';
             Zona_options_str  += '<option value="Z2">Z2</option>';
             Zona_options_str  += '<option value="Z3">Z3</option>';
@@ -1477,6 +1468,57 @@
                 filterFunc();
             };
             div_Zona.appendChild(reset_Zona);
+            document.getElementById("menu").appendChild(
+                document.createElement("div"));
+            var div_NOMBRE = document.createElement('div');
+            div_NOMBRE.id = "div_NOMBRE";
+            div_NOMBRE.className= "filterselect";
+            document.getElementById("menu").appendChild(div_NOMBRE);
+            sel_NOMBRE = document.createElement('select');
+            sel_NOMBRE.multiple = true;
+            sel_NOMBRE.size = 10;
+            sel_NOMBRE.id = "sel_NOMBRE";
+            var NOMBRE_options_str = "<option value='' unselected></option>";
+            sel_NOMBRE.onchange = function(){filterFunc()};
+            NOMBRE_options_str  += '<option value=" "> </option>';
+            NOMBRE_options_str  += '<option value="Altavista">Altavista</option>';
+            NOMBRE_options_str  += '<option value="Aranjuez">Aranjuez</option>';
+            NOMBRE_options_str  += '<option value="Belen">Belen</option>';
+            NOMBRE_options_str  += '<option value="Buenos Aires">Buenos Aires</option>';
+            NOMBRE_options_str  += '<option value="Castilla">Castilla</option>';
+            NOMBRE_options_str  += '<option value="Doce de Octubre">Doce de Octubre</option>';
+            NOMBRE_options_str  += '<option value="El Poblado">El Poblado</option>';
+            NOMBRE_options_str  += '<option value="Guayabal">Guayabal</option>';
+            NOMBRE_options_str  += '<option value="La America">La America</option>';
+            NOMBRE_options_str  += '<option value="La Candelaria">La Candelaria</option>';
+            NOMBRE_options_str  += '<option value="Laureles Estadio">Laureles Estadio</option>';
+            NOMBRE_options_str  += '<option value="Manrique">Manrique</option>';
+            NOMBRE_options_str  += '<option value="Palmitas">Palmitas</option>';
+            NOMBRE_options_str  += '<option value="Popular">Popular</option>';
+            NOMBRE_options_str  += '<option value="Robledo">Robledo</option>';
+            NOMBRE_options_str  += '<option value="San Antonio de Prado">San Antonio de Prado</option>';
+            NOMBRE_options_str  += '<option value="San Cristobal">San Cristobal</option>';
+            NOMBRE_options_str  += '<option value="San Javier">San Javier</option>';
+            NOMBRE_options_str  += '<option value="Santa Cruz">Santa Cruz</option>';
+            NOMBRE_options_str  += '<option value="Santa Elena">Santa Elena</option>';
+            NOMBRE_options_str  += '<option value="Villa Hermosa">Villa Hermosa</option>';
+            sel_NOMBRE.innerHTML = NOMBRE_options_str;
+            div_NOMBRE.appendChild(sel_NOMBRE);
+            var lab_NOMBRE = document.createElement('div');
+            lab_NOMBRE.innerHTML = 'NOMBRE';
+            lab_NOMBRE.className = 'filterlabel';
+            div_NOMBRE.appendChild(lab_NOMBRE);
+            var reset_NOMBRE = document.createElement('div');
+            reset_NOMBRE.innerHTML = 'clear filter';
+            reset_NOMBRE.className = 'filterlabel';
+            reset_NOMBRE.onclick = function() {
+                var options = document.getElementById("sel_NOMBRE").options;
+                for (var i=0; i < options.length; i++) {
+                    options[i].selected = false;
+                }
+                filterFunc();
+            };
+            div_NOMBRE.appendChild(reset_NOMBRE);
         </script>        
     </body>
 </html>
