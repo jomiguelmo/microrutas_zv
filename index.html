@@ -11,10 +11,8 @@
         <link rel="stylesheet" href="css/L.Control.Locate.min.css">
         <link rel="stylesheet" href="css/qgis2web.css">
         <link rel="stylesheet" href="css/fontawesome-all.min.css">
-        <link rel="stylesheet" href="css/leaflet-search.css">
         <link rel="stylesheet" href="css/filter.css">
 <link rel="stylesheet" href="css/nouislider.min.css">
-        <link rel="stylesheet" href="css/leaflet.photon.css">
         <link rel="stylesheet" href="css/leaflet-measure.css">
         <style>
         html, body, #map {
@@ -22,6 +20,45 @@
             height: 100%;
             padding: 0;
             margin: 0;
+        }
+        :root { --brand: #167a55; --ink: #1f2937; --line: #dce4e8; --surface: #ffffff; }
+        body { font-family: "Segoe UI", Arial, sans-serif; color: var(--ink); background: #f3f6f5; }
+        #all { display: flex; gap: 12px; box-sizing: border-box; padding: 12px; background: #f3f6f5; }
+        #mapWindow { width: auto !important; flex: 1; min-width: 0; height: 100% !important; border-radius: 14px; overflow: hidden; box-shadow: 0 8px 24px rgba(15, 45, 35, .12); }
+        #menu { width: 320px !important; height: auto !important; overflow-y: auto; padding: 16px; box-sizing: border-box; background: var(--surface); border: 1px solid var(--line); border-radius: 14px; box-shadow: 0 8px 24px rgba(15, 45, 35, .08); }
+        #menu.is-collapsed { width: 52px !important; overflow: visible; padding: 8px; }
+        #menu.is-collapsed > :not(.filters-toggle) { display: none; }
+        .filters-toggle { width: 100%; min-height: 36px; border: 0; border-radius: 9px; color: var(--brand); background: #edf8f3; font: inherit; font-size: 18px; cursor: pointer; }
+        #menu:not(.is-collapsed) .filters-toggle { margin-bottom: 12px; font-size: 13px; font-weight: 650; }
+        .kml-download { width: 100%; margin: 0 0 14px; padding: 9px 12px; border: 0; border-radius: 8px; color: #fff; background: var(--brand); font: inherit; font-weight: 650; cursor: pointer; }
+        .kml-download:disabled { color: #94a3b8; background: #e2e8f0; cursor: not-allowed; }
+        .panel-title { margin: 0 0 14px; font-size: 18px; font-weight: 700; color: var(--ink); }
+        .panel-subtitle { margin: -8px 0 16px; font-size: 12px; color: #64748b; }
+        .filterselect { margin: 0 0 16px !important; padding: 0 !important; border: 0 !important; }
+        .filterselect select, .filterselect input { width: 100%; min-height: 38px; box-sizing: border-box; border: 1px solid var(--line); border-radius: 8px; padding: 6px; color: var(--ink); background: white; }
+        .filterlabel { font-size: 12px; font-weight: 650; color: #475569; margin-top: 6px; }
+        .filterlabel:last-child { color: var(--brand); cursor: pointer; font-weight: 600; }
+        .leaflet-bar a, .leaflet-control-layers { border-radius: 9px !important; box-shadow: 0 4px 14px rgba(15, 45, 35, .16); }
+        .leaflet-bar a { color: var(--ink); }
+        .leaflet-bar a:hover { color: var(--brand); background: #edf8f3; }
+        .search-control { position: relative; }
+        .search-control > a { font-size: 18px; line-height: 30px; text-align: center; }
+        .search-panel { display: none; position: absolute; top: 0; left: 38px; width: 270px; padding: 14px; box-sizing: border-box; background: var(--surface); border: 1px solid var(--line); border-radius: 12px; box-shadow: 0 12px 28px rgba(15, 45, 35, .2); }
+        .search-panel.is-open { display: block; }
+        .search-panel h2 { margin: 0 0 5px; font-size: 15px; }
+        .search-panel p { margin: 0 0 10px; font-size: 12px; color: #64748b; line-height: 1.35; }
+        .search-panel select, .search-panel input, .search-panel button { width: 100%; box-sizing: border-box; font: inherit; border-radius: 8px; }
+        .search-panel select, .search-panel input { border: 1px solid var(--line); padding: 8px; color: var(--ink); background: #fff; }
+        .search-panel select { height: 88px; margin-bottom: 8px; }
+        .search-panel input { margin-bottom: 8px; }
+        .search-panel button { border: 0; padding: 9px 12px; color: #fff; background: var(--brand); font-weight: 650; cursor: pointer; }
+        .search-panel button:hover { background: #0f6847; }
+        @media (max-width: 760px) {
+          #all { flex-direction: column; padding: 8px; gap: 8px; }
+          #mapWindow { flex: none; height: 62% !important; }
+          #menu { width: 100% !important; max-height: 34%; border-radius: 12px; }
+          #menu.is-collapsed { width: 52px !important; align-self: flex-end; }
+          .search-panel { left: 0; top: 38px; width: min(270px, calc(100vw - 32px)); }
         }
         </style>
         <title></title>
@@ -40,18 +77,14 @@
         <script src="js/rbush.min.js"></script>
         <script src="js/labelgun.min.js"></script>
         <script src="js/labels.js"></script>
-        <script src="js/leaflet.photon.js"></script>
         <script src="js/leaflet-measure.js"></script>
-        <script src="js/leaflet-search.js"></script>
         <script src="js/tailDT.js"></script>
 <script src="js/nouislider.min.js"></script>
 <script src="js/wNumb.js"></script>
-        <script src="data/Comunas_1.js"></script>
         <script src="data/zonasverdes__areas_zonas_verdes_2.js"></script>
         <script src="data/Rutas_SIF_3.js"></script>
         <script src="data/Operativos_4.js"></script>
         <script src="data/sif_areas_5.js"></script>
-        <script src="data/Espartillos_6.js"></script>
         <script>
         var map = L.map('map', {
             zoomControl:false, maxZoom:28, minZoom:1
@@ -130,17 +163,28 @@
 		var botonLotes = L.control({position:'topleft'});
 
 botonLotes.onAdd = function(map){
-
-    var div = L.DomUtil.create('div','leaflet-bar');
-
-    div.innerHTML = '<a href="#" title="Buscar varios lotes">🔎</a>';
-
-    div.onclick = function(){
-        buscarVariosLotes();
+    var div = L.DomUtil.create('div', 'leaflet-bar search-control');
+    div.innerHTML = '<a href="#" class="search-toggle" title="Buscar">&#128269;</a>' +
+        '<section class="search-panel" aria-label="Buscar en el mapa">' +
+        '<h2>Buscar en el mapa</h2>' +
+        '<p>Seleccione uno o varios campos y escriba valores separados por coma.</p>' +
+        '<select id="search-types" multiple aria-label="Campos de búsqueda">' +
+        '<option value="lote" selected>Lote</option><option value="microruta">Microruta</option><option value="espartillos">Espartillos</option>' +
+        '</select><input id="search-values" type="search" placeholder="Ej.: 101, 202, ABC" aria-label="Valores separados por coma">' +
+        '<button type="button" id="search-submit">Buscar</button></section>';
+    L.DomEvent.disableClickPropagation(div);
+    L.DomEvent.disableScrollPropagation(div);
+    var panel = div.querySelector('.search-panel');
+    div.querySelector('.search-toggle').onclick = function(event) {
+        L.DomEvent.preventDefault(event);
+        panel.classList.toggle('is-open');
+        if(panel.classList.contains('is-open')) div.querySelector('#search-values').focus();
     };
-
+    div.querySelector('#search-submit').onclick = buscarValoresSeleccionados;
+    div.querySelector('#search-values').onkeydown = function(event) {
+        if(event.key === 'Enter') buscarValoresSeleccionados();
+    };
     return div;
-
 };
 
 botonLotes.addTo(map);
@@ -200,17 +244,21 @@ botonLotes.addTo(map);
         map.createPane('pane_Comunas_1');
         map.getPane('pane_Comunas_1').style.zIndex = 401;
         map.getPane('pane_Comunas_1').style['mix-blend-mode'] = 'normal';
-        var layer_Comunas_1 = new L.geoJson(json_Comunas_1, {
-            attribution: '',
-            interactive: true,
-            dataVar: 'json_Comunas_1',
-            layerName: 'layer_Comunas_1',
-            pane: 'pane_Comunas_1',
-            onEachFeature: pop_Comunas_1,
-            style: style_Comunas_1_0,
-        });
-        bounds_group.addLayer(layer_Comunas_1);
-        map.addLayer(layer_Comunas_1);
+        var layer_Comunas_1 = L.layerGroup();
+        var comunasCargadas = false;
+        function cargarComunas() {
+            if(comunasCargadas) return;
+            comunasCargadas = true;
+            var script = document.createElement('script');
+            script.src = 'data/Comunas_1.js';
+            script.onload = function() {
+                layer_Comunas_1.addLayer(new L.geoJson(json_Comunas_1, {
+                    attribution: '', interactive: true, pane: 'pane_Comunas_1',
+                    onEachFeature: pop_Comunas_1, style: style_Comunas_1_0
+                }));
+            };
+            document.head.appendChild(script);
+        }
         function pop_zonasverdes__areas_zonas_verdes_2(feature, layer) {
             var popupContent = '<table>\
                     <tr>\
@@ -243,18 +291,28 @@ botonLotes.addTo(map);
 			
         }
 
-        function style_zonasverdes__areas_zonas_verdes_2_0() {
+        var coloresCuadrilla = ['#16a34a', '#2563eb', '#dc2626', '#9333ea', '#ea580c', '#0891b2', '#be123c', '#4d7c0f', '#ca8a04', '#0f766e'];
+        function colorCuadrilla(valor) {
+            var texto = String(valor == null ? 'Sin cuadrilla' : valor).trim();
+            var numero = Number(texto);
+            if(Number.isFinite(numero)) return coloresCuadrilla[Math.abs(numero) % coloresCuadrilla.length];
+            var hash = 0;
+            for(var i = 0; i < texto.length; i++) hash = ((hash << 5) - hash) + texto.charCodeAt(i);
+            return coloresCuadrilla[Math.abs(hash) % coloresCuadrilla.length];
+        }
+        function style_zonasverdes__areas_zonas_verdes_2_0(feature) {
+            var color = colorCuadrilla(feature && feature.properties ? feature.properties.CUADRILLA : null);
             return {
                 pane: 'pane_zonasverdes__areas_zonas_verdes_2',
-                opacity: 1,
-                color: 'rgba(35,35,35,0.507)',
+                opacity: 0.95,
+                color: color,
                 dashArray: '',
                 lineCap: 'butt',
                 lineJoin: 'miter',
                 weight: 1.0, 
                 fill: true,
-                fillOpacity: 1,
-                fillColor: 'rgba(81,233,25,0.507)',
+                fillOpacity: 0.62,
+                fillColor: color,
                 interactive: true,
             }
         }
@@ -462,17 +520,25 @@ botonLotes.addTo(map);
         map.createPane('pane_Espartillos_6');
         map.getPane('pane_Espartillos_6').style.zIndex = 406;
         map.getPane('pane_Espartillos_6').style['mix-blend-mode'] = 'normal';
-        var layer_Espartillos_6 = new L.geoJson(json_Espartillos_6, {
-            attribution: '',
-            interactive: true,
-            dataVar: 'json_Espartillos_6',
-            layerName: 'layer_Espartillos_6',
-            pane: 'pane_Espartillos_6',
-            onEachFeature: pop_Espartillos_6,
-            style: style_Espartillos_6_0,
-        });
-        bounds_group.addLayer(layer_Espartillos_6);
-        map.addLayer(layer_Espartillos_6);
+        var layer_Espartillos_6 = L.layerGroup();
+        var espartillosCargados = false;
+        function cargarEspartillos(alTerminar) {
+            if(espartillosCargados) {
+                if(alTerminar) alTerminar();
+                return;
+            }
+            espartillosCargados = true;
+            var script = document.createElement('script');
+            script.src = 'data/Espartillos_6.js';
+            script.onload = function() {
+                layer_Espartillos_6.addLayer(new L.geoJson(json_Espartillos_6, {
+                    attribution: '', interactive: true, pane: 'pane_Espartillos_6',
+                    onEachFeature: pop_Espartillos_6, style: style_Espartillos_6_0
+                }));
+                if(alTerminar) alTerminar();
+            };
+            document.head.appendChild(script);
+        }
         var overlaysTree = [
             {label: '<img src="legend/Espartillos_6.png" /> Espartillos', layer: layer_Espartillos_6},
             {label: '<img src="legend/sif_areas_5.png" /> sif_areas', layer: layer_sif_areas_5},
@@ -491,40 +557,11 @@ botonLotes.addTo(map);
             collapsed: true,
         });
         lay.addTo(map);
-        setBounds();
-        map.addControl(new L.Control.Search({
-    layer: layer_zonasverdes__areas_zonas_verdes_2,
-    initial: false,
-    hideMarkerOnCollapse: true,
-    propertyName: 'No_Lote',
-
-    moveToLocation: function(latlng, title, map) {
-
-        map.setView(latlng, 18);
-
-        layer_zonasverdes__areas_zonas_verdes_2.eachLayer(function(layer){
-
-            if(layer.feature.properties.No_Lote == title){
-
-                layer.setStyle({
-                    color: '#ff0000',
-                    weight: 3,
-                    fillColor: '#ffff00',
-                    fillOpacity: 0.7
-                });
-
-            }
-
+        map.on('overlayadd', function(e) {
+            if(e.layer === layer_Comunas_1) cargarComunas();
+            if(e.layer === layer_Espartillos_6) cargarEspartillos();
         });
-
-    }
-
-}));
-        if (typeof url === 'undefined') {
-            document.getElementsByClassName('search-button')[0].className += ' fa fa-binoculars';
-        } else {
-            document.getElementsByClassName('search-button')[1].className += ' fa fa-binoculars';
-        }
+        setBounds();
         var mapDiv = document.getElementById('map');
         var row = document.createElement('div');
         row.className="row";
@@ -543,8 +580,19 @@ botonLotes.addTo(map);
         mapDiv.parentNode.insertBefore(row, mapDiv);
         document.getElementById("all").appendChild(col1);
         document.getElementById("all").appendChild(col2);
+        col2.classList.add('is-collapsed');
+        col2.insertAdjacentHTML('afterbegin', '<button type="button" class="filters-toggle" aria-expanded="false" title="Abrir filtros">☰</button><h1 class="panel-title">Filtros</h1><p class="panel-subtitle">Refina las áreas visibles en el mapa</p><button type="button" id="download-kml" class="kml-download" disabled>Descargar KML</button>');
+        var botonFiltros = col2.querySelector('.filters-toggle');
+        botonFiltros.onclick = function() {
+            var cerrado = col2.classList.toggle('is-collapsed');
+            botonFiltros.setAttribute('aria-expanded', String(!cerrado));
+            botonFiltros.title = cerrado ? 'Abrir filtros' : 'Cerrar filtros';
+            botonFiltros.textContent = cerrado ? '☰' : 'Ocultar filtros';
+            setTimeout(function(){ map.invalidateSize(); }, 180);
+        };
+        document.getElementById('download-kml').onclick = descargarKml;
         col1.appendChild(mapDiv)
-        var Filters = {"No_Lote": "str","Zona": "str","NOMBRE": "str"};
+        var Filters = {"No_Lote": "str","Zona": "str","NOMBRE": "str", "CUADRILLA": "str"};
         var filteredFeatures = [];
 		function filterFunc() {
           map.eachLayer(function(lyr){
@@ -555,9 +603,15 @@ botonLotes.addTo(map);
                 keyS = key.replace(/[^a-zA-Z0-9_]/g, "")
                 if (Filters[key] == "str" || Filters[key] == "bool"){
                   var selection = [];
-                  var options = document.getElementById("sel_" + keyS).options
-                  for (var i=0; i < options.length; i++) {
-                    if (options[i].selected) selection.push(options[i].value);
+                  var selector = document.getElementById("sel_" + keyS);
+                  var inputFiltro = document.getElementById("search_" + keyS);
+                  if(selector) {
+                    var options = selector.options;
+                    for (var i=0; i < options.length; i++) {
+                      if (options[i].selected) selection.push(options[i].value);
+                    }
+                  } else if(inputFiltro && inputFiltro.value.trim()) {
+                    selection = inputFiltro.value.split(',').map(function(v){ return v.trim(); });
                   }
                     try{
                       if (key in features[0].properties){
@@ -647,17 +701,74 @@ setTimeout(function(){
 updateDynamicFilters();
           })
 		}
-		function seleccionarLote(e){
+        var lotesSeleccionados = [];
+        function actualizarBotonKml() {
+            var boton = document.getElementById('download-kml');
+            if(!boton) return;
+            boton.disabled = lotesSeleccionados.length === 0;
+            boton.textContent = lotesSeleccionados.length ? 'Descargar KML (' + lotesSeleccionados.length + ')' : 'Descargar KML';
+        }
+        function seleccionarLote(e){
+            var layer = e.target;
+            var microruta = String(layer.feature.properties.Microruta == null ? '' : layer.feature.properties.Microruta).trim();
+            var lotesMicroruta = json_zonasverdes__areas_zonas_verdes_2.features.filter(function(feature){
+                return String(feature.properties.Microruta == null ? '' : feature.properties.Microruta).trim() === microruta;
+            });
+            var yaSeleccionada = lotesMicroruta.length > 0 && lotesMicroruta.every(function(feature){
+                return lotesSeleccionados.indexOf(feature) !== -1;
+            });
+            lotesMicroruta.forEach(function(feature){
+                var indice = lotesSeleccionados.indexOf(feature);
+                if(yaSeleccionada && indice !== -1) lotesSeleccionados.splice(indice, 1);
+                if(!yaSeleccionada && indice === -1) lotesSeleccionados.push(feature);
+            });
+            layer_zonasverdes__areas_zonas_verdes_2.eachLayer(function(loteLayer){
+                var mismaMicroruta = String(loteLayer.feature.properties.Microruta == null ? '' : loteLayer.feature.properties.Microruta).trim() === microruta;
+                if(!mismaMicroruta) return;
+                loteLayer.setStyle(yaSeleccionada ? style_zonasverdes__areas_zonas_verdes_2_0(loteLayer.feature) : {color:'#111827', weight:3, fillColor:'#facc15', fillOpacity:0.82});
+            });
+            actualizarBotonKml();
+        }
+        function escaparXml(valor) {
+            return String(valor == null ? '' : valor).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&apos;');
+        }
+        function coordenadasKml(coordenadas) {
+            return coordenadas.map(function(coord){ return coord[0] + ',' + coord[1] + ',' + (coord.length > 2 ? coord[2] : 0); }).join(' ');
+        }
+        function geometriaKml(geometria) {
+            if(geometria.type === 'Polygon') return '<Polygon><outerBoundaryIs><LinearRing><coordinates>' + coordenadasKml(geometria.coordinates[0]) + '</coordinates></LinearRing></outerBoundaryIs>' + geometria.coordinates.slice(1).map(function(anillo){ return '<innerBoundaryIs><LinearRing><coordinates>' + coordenadasKml(anillo) + '</coordinates></LinearRing></innerBoundaryIs>'; }).join('') + '</Polygon>';
+            if(geometria.type === 'MultiPolygon') return '<MultiGeometry>' + geometria.coordinates.map(function(poligono){ return geometriaKml({type: 'Polygon', coordinates: poligono}); }).join('') + '</MultiGeometry>';
+            if(geometria.type === 'LineString') return '<LineString><coordinates>' + coordenadasKml(geometria.coordinates) + '</coordinates></LineString>';
+            if(geometria.type === 'Point') return '<Point><coordinates>' + coordenadasKml([geometria.coordinates]) + '</coordinates></Point>';
+            return '';
+        }
+        function descargarKml() {
+            if(!lotesSeleccionados.length) return;
+            var marcadores = lotesSeleccionados.map(function(feature){
+                var p = feature.properties || {};
+                var datos = Object.keys(p).map(function(clave){ return '<Data name="' + escaparXml(clave) + '"><value>' + escaparXml(p[clave]) + '</value></Data>'; }).join('');
+                return '<Placemark><name>Lote ' + escaparXml(p.No_Lote || '') + '</name><ExtendedData>' + datos + '</ExtendedData>' + geometriaKml(feature.geometry) + '</Placemark>';
+            }).join('');
+            var contenido = '<?xml version="1.0" encoding="UTF-8"?><kml xmlns="http://www.opengis.net/kml/2.2"><Document><name>Lotes seleccionados</name>' + marcadores + '</Document></kml>';
+            var enlace = document.createElement('a');
+            enlace.href = URL.createObjectURL(new Blob([contenido], {type: 'application/vnd.google-earth.kml+xml'}));
+            enlace.download = 'lotes-seleccionados.kml';
+            document.body.appendChild(enlace);
+            enlace.click();
+            document.body.removeChild(enlace);
+            URL.revokeObjectURL(enlace.href);
+        }
 
-    var loteSeleccionado = String(e.target.feature.properties.No_Lote).trim();
+        function seleccionarMicroruta(microruta, forzarSeleccion) {
+    var microrutaSeleccionada = String(microruta == null ? '' : microruta).trim();
 
     var seleccionar = true;
 
     layer_zonasverdes__areas_zonas_verdes_2.eachLayer(function(layer){
 
-        var loteMapa = String(layer.feature.properties.No_Lote).trim();
+        var microrutaMapa = String(layer.feature.properties.Microruta == null ? '' : layer.feature.properties.Microruta).trim();
 
-        if(loteMapa == loteSeleccionado){
+        if(microrutaMapa == microrutaSeleccionada){
 
             if(layer.options.fillColor == '#ffff00'){
                 seleccionar = false;
@@ -666,12 +777,13 @@ updateDynamicFilters();
         }
 
     });
+    if(forzarSeleccion) seleccionar = true;
 
     layer_zonasverdes__areas_zonas_verdes_2.eachLayer(function(layer){
 
-        var loteMapa = String(layer.feature.properties.No_Lote).trim();
+        var microrutaMapa = String(layer.feature.properties.Microruta == null ? '' : layer.feature.properties.Microruta).trim();
 
-        if(loteMapa == loteSeleccionado){
+        if(microrutaMapa == microrutaSeleccionada){
 
             if(seleccionar){
 
@@ -698,81 +810,60 @@ updateDynamicFilters();
     });
 
 }
-		function buscarVariosLotes(){
-
-    var texto = prompt("Ingrese los lotes separados por coma");
-
-    if(!texto) return;
-
-    var lotes = texto.split(",").map(function(l){
-        return l.trim();
-    });
-
-    var capasEncontradas = [];
-
-    layer_zonasverdes__areas_zonas_verdes_2.eachLayer(function(layer){
-
-        var loteMapa = String(layer.feature.properties.No_Lote).trim();
-
-        if(lotes.includes(loteMapa)){
-
-            layer.setStyle({
-                color:'#ff0000',
-                weight:3,
-                fillColor:'#ffff00',
-                fillOpacity:0.7
-            });
-
-            capasEncontradas.push(layer);
-
-        }
-
-    });
-
-    if(capasEncontradas.length > 0){
-
-        var grupo = new L.featureGroup(capasEncontradas);
-
-        map.fitBounds(grupo.getBounds());
-
-    }else{
-
-        alert("No se encontraron lotes");
-
+        function buscarValoresSeleccionados(){
+    var selector = document.getElementById('search-types');
+    var entrada = document.getElementById('search-values');
+    var tipos = Array.prototype.slice.call(selector.selectedOptions).map(function(option){ return option.value; });
+    var valores = entrada.value.split(',').map(function(valor){ return valor.trim().toLowerCase(); }).filter(Boolean);
+    if(!tipos.length || !valores.length) {
+        alert('Seleccione al menos un campo e ingrese uno o varios valores.');
+        return;
     }
-
+    if(tipos.indexOf('espartillos') !== -1 && !espartillosCargados) {
+        cargarEspartillos(buscarValoresSeleccionados);
+        return;
+    }
+    var configuraciones = {
+        lote: {campo: 'No_Lote', capa: layer_zonasverdes__areas_zonas_verdes_2},
+        microruta: {campo: 'Microruta', capa: layer_zonasverdes__areas_zonas_verdes_2},
+        espartillos: {campo: 'Codigo', capa: layer_Espartillos_6}
+    };
+    var capasEncontradas = [];
+    tipos.forEach(function(tipo){
+        var configuracion = configuraciones[tipo];
+        configuracion.capa.eachLayer(function(layer){
+            var propiedades = layer.feature && layer.feature.properties ? layer.feature.properties : {};
+            var valorMapa = String(propiedades[configuracion.campo] == null ? '' : propiedades[configuracion.campo]).trim().toLowerCase();
+            if(valores.indexOf(valorMapa) === -1 || capasEncontradas.indexOf(layer) !== -1) return;
+            layer.setStyle({color:'#d92d20', weight:3, fillColor:'#facc15', fillOpacity:0.75});
+            capasEncontradas.push(layer);
+            if(configuracion.capa === layer_zonasverdes__areas_zonas_verdes_2 && lotesSeleccionados.indexOf(layer.feature) === -1) {
+                lotesSeleccionados.push(layer.feature);
+            }
+        });
+    });
+    if(capasEncontradas.length) {
+        var grupo = new L.featureGroup(capasEncontradas);
+        map.fitBounds(grupo.getBounds(), {padding: [20, 20], maxZoom: 18});
+        actualizarBotonKml();
+    } else {
+        alert('No se encontraron resultados.');
+    }
 }
 		function updateDynamicFilters(){
 
-    var zonas = new Set();
-    var comunas = new Set();
-    var lotes = new Set();
+    var cuadrillas = new Set();
 
-    map.eachLayer(function(layer){
+    json_zonasverdes__areas_zonas_verdes_2.features.forEach(function(feature){
+            var p = feature.properties;
 
-        if(layer.feature){
-
-            var p = layer.feature.properties;
-
-            if(p.Zona){
-                zonas.add(p.Zona);
+            if(p.CUADRILLA){
+                cuadrillas.add(p.CUADRILLA);
             }
-
-            if(p.NOMBRE){
-                comunas.add(p.NOMBRE);
-            }
-
-            if(p.No_Lote){
-                lotes.add(p.No_Lote);
-            }
-
-        }
 
     });
 
-    updateSelect("sel_Zona", zonas);
-    updateSelect("sel_NOMBRE", comunas);
-    updateSelect("sel_No_Lote", lotes);
+    updateSelect("sel_CUADRILLA", cuadrillas);
 }
 
 function updateSelect(id, values){
@@ -789,7 +880,12 @@ function updateSelect(id, values){
     option.text = "Todos";
     select.appendChild(option);
 
-    values = Array.from(values).sort();
+    values = Array.from(values).sort(function(a, b){
+        var numeroA = Number(a);
+        var numeroB = Number(b);
+        if(Number.isFinite(numeroA) && Number.isFinite(numeroB)) return numeroA - numeroB;
+        return String(a).localeCompare(String(b), 'es', {numeric: true, sensitivity: 'base'});
+    });
 
     values.forEach(function(v){
 
@@ -818,6 +914,7 @@ function updateSelect(id, values){
             sel_No_Lote.id = "sel_No_Lote";
             var No_Lote_options_str = "<option value='' unselected></option>";
             sel_No_Lote.onchange = function(){filterFunc()};
+            if(false) { // Lista sustituida por el campo de búsqueda directa al final.
             No_Lote_options_str  += '<option value="NULL">NULL</option>';
             No_Lote_options_str  += '<option value=""></option>';
             No_Lote_options_str  += '<option value="1">1</option>';
@@ -1649,6 +1746,7 @@ function updateSelect(id, values){
             No_Lote_options_str  += '<option value="INDER">INDER</option>';
             No_Lote_options_str  += '<option value="N/A">N/A</option>';
             No_Lote_options_str  += '<option value="NA">NA</option>';
+            }
             sel_No_Lote.innerHTML = No_Lote_options_str;
             div_No_Lote.appendChild(sel_No_Lote);
             var lab_No_Lote = document.createElement('div');
@@ -1754,6 +1852,46 @@ function updateSelect(id, values){
                 filterFunc();
             };
             div_NOMBRE.appendChild(reset_NOMBRE);
+            var div_CUADRILLA = document.createElement('div');
+            div_CUADRILLA.id = "div_CUADRILLA";
+            div_CUADRILLA.className = "filterselect";
+            document.getElementById("menu").appendChild(div_CUADRILLA);
+            var sel_CUADRILLA = document.createElement('select');
+            sel_CUADRILLA.multiple = true;
+            sel_CUADRILLA.size = 10;
+            sel_CUADRILLA.id = "sel_CUADRILLA";
+            sel_CUADRILLA.onchange = function(){ filterFunc(); };
+            div_CUADRILLA.appendChild(sel_CUADRILLA);
+            var lab_CUADRILLA = document.createElement('div');
+            lab_CUADRILLA.innerHTML = 'CUADRILLA';
+            lab_CUADRILLA.className = 'filterlabel';
+            div_CUADRILLA.appendChild(lab_CUADRILLA);
+            var reset_CUADRILLA = document.createElement('div');
+            reset_CUADRILLA.innerHTML = 'clear filter';
+            reset_CUADRILLA.className = 'filterlabel';
+            reset_CUADRILLA.onclick = function() {
+                var options = document.getElementById("sel_CUADRILLA").options;
+                for (var i = 0; i < options.length; i++) options[i].selected = false;
+                filterFunc();
+            };
+            div_CUADRILLA.appendChild(reset_CUADRILLA);
+            // El listado histórico de lotes tiene miles de opciones: se cambia por búsqueda directa.
+            var filtroLotes = document.createElement('input');
+            filtroLotes.type = 'search';
+            filtroLotes.id = 'search_No_Lote';
+            filtroLotes.placeholder = 'Lotes separados por coma';
+            filtroLotes.onchange = filterFunc;
+            div_No_Lote.replaceChild(filtroLotes, sel_No_Lote);
+            reset_No_Lote.onclick = function() {
+                filtroLotes.value = '';
+                filterFunc();
+            };
+            // Orden de uso: la cuadrilla es el filtro principal.
+            var menuFiltros = document.getElementById('menu');
+            [div_CUADRILLA, div_No_Lote, div_Zona, div_NOMBRE].forEach(function(filtro){
+                menuFiltros.appendChild(filtro);
+            });
+            updateDynamicFilters();
         </script>        
     </body>
 </html>
