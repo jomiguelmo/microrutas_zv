@@ -54,11 +54,12 @@
         .search-panel button { border: 0; padding: 9px 12px; color: #fff; background: var(--brand); font-weight: 650; cursor: pointer; }
         .search-panel button:hover { background: #0f6847; }
         @media (max-width: 760px) {
-          #all { flex-direction: column; padding: 8px; gap: 8px; }
-          #mapWindow { flex: none; height: 62% !important; }
-          #menu { width: 100% !important; max-height: 34%; border-radius: 12px; }
-          #menu.is-collapsed { width: 52px !important; align-self: flex-end; }
-          .search-panel { left: 0; top: 38px; width: min(270px, calc(100vw - 32px)); }
+          #all { position: relative; display: block; padding: 8px; }
+          #mapWindow { width: 100% !important; height: 100% !important; }
+          #menu { position: absolute; right: 8px; bottom: 8px; z-index: 1000; width: calc(100% - 16px) !important; max-height: min(46dvh, 360px); padding: 12px; border-radius: 12px; }
+          #menu.is-collapsed { width: 44px !important; height: 44px !important; min-height: 44px; padding: 4px; }
+          .filters-toggle { min-height: 36px; }
+          .search-panel { position: fixed; top: max(8px, env(safe-area-inset-top)); left: 8px; right: 8px; width: auto; max-height: calc(100dvh - 16px); overflow-y: auto; -webkit-overflow-scrolling: touch; z-index: 2000; }
         }
         </style>
         <title></title>
