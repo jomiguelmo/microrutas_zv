@@ -85,7 +85,6 @@
         <script src="data/zonasverdes__areas_zonas_verdes_2.js"></script>
         <script src="data/Rutas_SIF_3.js"></script>
         <script src="data/Operativos_4.js"></script>
-        <script src="data/sif_areas_5.js"></script>
         <script>
         var map = L.map('map', {
             zoomControl:false, maxZoom:28, minZoom:1
@@ -161,6 +160,22 @@
             position: 'topleft'
         }).addTo(map);
         L.control.locate({locateOptions: {maxZoom: 19}}).addTo(map);
+		var panelBusqueda;
+        function cerrarBuscador() {
+            if(panelBusqueda) panelBusqueda.classList.remove('is-open');
+        }
+        function cerrarFiltros() {
+            var menu = document.getElementById('menu');
+            var boton = menu && menu.querySelector('.filters-toggle');
+            if(!menu || menu.classList.contains('is-collapsed')) return;
+            menu.classList.add('is-collapsed');
+            if(boton) {
+                boton.setAttribute('aria-expanded', 'false');
+                boton.title = 'Abrir filtros';
+                boton.textContent = '☰';
+            }
+            setTimeout(function(){ map.invalidateSize(); }, 180);
+        }
 		var botonLotes = L.control({position:'topleft'});
 
 botonLotes.onAdd = function(map){
@@ -175,11 +190,12 @@ botonLotes.onAdd = function(map){
         '<button type="button" id="search-submit">Buscar</button></section>';
     L.DomEvent.disableClickPropagation(div);
     L.DomEvent.disableScrollPropagation(div);
-    var panel = div.querySelector('.search-panel');
+    panelBusqueda = div.querySelector('.search-panel');
     div.querySelector('.search-toggle').onclick = function(event) {
         L.DomEvent.preventDefault(event);
-        panel.classList.toggle('is-open');
-        if(panel.classList.contains('is-open')) div.querySelector('#search-values').focus();
+        cerrarFiltros();
+        panelBusqueda.classList.toggle('is-open');
+        if(panelBusqueda.classList.contains('is-open')) div.querySelector('#search-values').focus();
     };
     div.querySelector('#search-submit').onclick = buscarValoresSeleccionados;
     div.querySelector('#search-values').onkeydown = function(event) {
@@ -436,6 +452,8 @@ botonLotes.addTo(map);
         });
         bounds_group.addLayer(layer_Operativos_4);
         map.addLayer(layer_Operativos_4);
+        /* Capa sif_areas retirada de la publicación. */
+        if(false) {
         function pop_sif_areas_5(feature, layer) {
             var popupContent = '<table>\
                     <tr>\
@@ -481,6 +499,7 @@ botonLotes.addTo(map);
         });
         bounds_group.addLayer(layer_sif_areas_5);
         map.addLayer(layer_sif_areas_5);
+        }
         function pop_Espartillos_6(feature, layer) {
             var popupContent = '<table>\
                     <tr>\
@@ -542,7 +561,6 @@ botonLotes.addTo(map);
         }
         var overlaysTree = [
             {label: '<img src="legend/Espartillos_6.png" /> Espartillos', layer: layer_Espartillos_6},
-            {label: '<img src="legend/sif_areas_5.png" /> sif_areas', layer: layer_sif_areas_5},
             {label: '<img src="legend/Operativos_4.png" /> Operativos', layer: layer_Operativos_4},
             {label: '<img src="legend/Rutas_SIF_3.png" /> Rutas_SIF', layer: layer_Rutas_SIF_3},
             {label: '<img src="legend/zonasverdes__areas_zonas_verdes_2.png" /> zonasverdes__areas_zonas_verdes', layer: layer_zonasverdes__areas_zonas_verdes_2},
@@ -585,6 +603,7 @@ botonLotes.addTo(map);
         col2.insertAdjacentHTML('afterbegin', '<button type="button" class="filters-toggle" aria-expanded="false" title="Abrir filtros">☰</button><h1 class="panel-title">Filtros</h1><p class="panel-subtitle">Refina las áreas visibles en el mapa</p><button type="button" id="download-kml" class="kml-download" disabled>Descargar KML</button>');
         var botonFiltros = col2.querySelector('.filters-toggle');
         botonFiltros.onclick = function() {
+            cerrarBuscador();
             var cerrado = col2.classList.toggle('is-collapsed');
             botonFiltros.setAttribute('aria-expanded', String(!cerrado));
             botonFiltros.title = cerrado ? 'Abrir filtros' : 'Cerrar filtros';
@@ -592,6 +611,15 @@ botonLotes.addTo(map);
             setTimeout(function(){ map.invalidateSize(); }, 180);
         };
         document.getElementById('download-kml').onclick = descargarKml;
+        map.on('click', function() {
+            cerrarBuscador();
+            cerrarFiltros();
+        });
+        row.addEventListener('click', function(event) {
+            if(col2.contains(event.target) || (panelBusqueda && panelBusqueda.parentElement.contains(event.target))) return;
+            cerrarBuscador();
+            cerrarFiltros();
+        });
         col1.appendChild(mapDiv)
         var Filters = {"No_Lote": "str","Zona": "str","NOMBRE": "str", "CUADRILLA": "str"};
         var filteredFeatures = [];
